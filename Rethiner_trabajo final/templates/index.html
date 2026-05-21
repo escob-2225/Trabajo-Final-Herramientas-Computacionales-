@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>
+    Rethiner – Óptica y Oftalmología
+  </title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/estilos-generales.css') }}"
+  />
+
+</head>
+
+<body>
+
+<!-- ===== NAVBAR ===== -->
+
+<header class="navbar">
+
+  <div class="nav-container">
+
+    <div class="nav-left">
+
+      <div class="logo">
+
+        <span class="logo-icon">
+          👁
+        </span>
+
+        <div class="logo-text">
+
+          <span class="logo-name">
+            rethiner
+          </span>
+
+          <span class="logo-sub">
+            Óptica y Oftalmología
+          </span>
+
+        </div>
+
+      </div>
+
+      <div class="usuario-info">
+
+        <span id="usuario-nombre"></span>
+
+        <small id="usuario-email"></small>
+
+      </div>
+
+    </div>
+
+    <nav class="nav-links">
+
+      <a href="#inicio" class="active">
+        Inicio
+      </a>
+
+      <a href="#servicios">
+        Servicios
+      </a>
+
+      <a href="#tienda">
+        Tienda
+      </a>
+
+      <a href="#nosotros">
+        Nosotros
+      </a>
+
+    </nav>
+
+    <div class="nav-buttons">
+
+      <a
+        href="/login"
+        class="btn-login-nav"
+        id="btn-login"
+      >
+        Iniciar sesión
+      </a>
+
+      <button
+        class="btn-agendar"
+        onclick="scrollToCita()"
+      >
+        Agendar Cita
+      </button>
+
+      <button
+        class="btn-logout"
+        onclick="cerrarSesion()"
+      >
+        Cerrar Sesión
+      </button>
+
+    </div>
+
+    <button
+      class="hamburger"
+      onclick="toggleMenu()"
+    >
+      ☰
+    </button>
+
+  </div>
+
+  <div
+    class="mobile-menu"
+    id="mobileMenu"
+  >
+
+    <a href="#inicio">
+      Inicio
+    </a>
+
+    <a href="#servicios">
+      Servicios
+    </a>
+
+    <a href="#tienda">
+      Tienda
+    </a>
+
+    <a href="#nosotros">
+      Nosotros
+    </a>
+
+    <a href="/login">
+      Iniciar sesión
+    </a>
+
+    <button
+      class="btn-agendar"
+      onclick="scrollToCita()"
+    >
+      Agendar Cita
+    </button>
+
+  </div>
+
+</header>
+
+<!-- ===== HERO ===== -->
+
+<section
+  class="hero"
+  id="inicio"
+>
+
+  <div class="hero-content">
+
+    <h1>
+
+      Tu visión,
+      <br>
+
+      nuestra
+      <span>
+        prioridad.
+      </span>
+
+    </h1>
+
+    <p>
+      Cuida de tus ojos con los mejores especialistas.
+    </p>
+
+    <div class="hero-btns">
+
+      <button
+        class="btn-agendar"
+        onclick="scrollToCita()"
+      >
+        Agendar Cita
+      </button>
+
+      <button
+        class="btn-outline"
+        onclick="document.getElementById('tienda').scrollIntoView({behavior:'smooth'})"
+      >
+        Ver Productos
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="hero-img">
+
+    <img
+      src="{{ url_for('static', filename='img/hero.jpg') }}"
+      alt="Especialista visual"
+      onerror="this.style.display='none'"
+    />
+
+    <div class="hero-placeholder">
+
+      <div class="doctor-illustration">
+
+        <div class="doc-circle"></div>
+
+        <div class="phoropter">
+
+          <div class="lens l1"></div>
+          <div class="lens l2"></div>
+          <div class="lens l3"></div>
+          <div class="lens l4"></div>
+
+          <div class="arm a1"></div>
+          <div class="arm a2"></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ===== SERVICIOS ===== -->
+
+<section
+  class="services-bar"
+  id="servicios"
+>
+
+  <div class="services-container">
+
+    <div class="service-item">
+
+      <div class="svc-icon">
+        📋
+      </div>
+
+      <div>
+
+        <strong>
+          Exámenes Visuales
+        </strong>
+
+        <p>
+          Consultas y chequeos
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="service-item">
+
+      <div class="svc-icon">
+        👓
+      </div>
+
+      <div>
+
+        <strong>
+          Lentes y Monturas
+        </strong>
+
+        <p>
+          Varías gafas y complementos
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="service-item">
+
+      <div class="svc-icon">
+        🔬
+      </div>
+
+      <div>
+
+        <strong>
+          Cirugía Láser
+        </strong>
+
+        <p>
+          Corrección visual avanzada
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="service-item">
+
+      <div class="svc-icon">
+        👁
+      </div>
+
+      <div>
+
+        <strong>
+          Salud Ocular
+        </strong>
+
+        <p>
+          Cuidado integral de tus ojos
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ===== PRODUCTOS ===== -->
+
+<section
+  class="products-section"
+  id="tienda"
+>
+
+  <div class="section-container">
+
+    <h2>
+      Descubre Nuestros Productos
+    </h2>
+
+    <div class="products-grid">
+
+      <div class="product-card">
+
+        <div class="product-img svg-product">
+
+          <img
+            src="{{ url_for('static', filename='img/gafas-moda.png') }}"
+            alt="Gafas de Moda"
+          />
+
+        </div>
+
+        <p class="product-name">
+          Gafas de Moda
+        </p>
+
+      </div>
+
+      <div class="product-card">
+
+        <div class="product-img svg-product">
+
+          <img
+            src="{{ url_for('static', filename='img/lentes-sol.png') }}"
+            alt="Lentes de Sol"
+          />
+
+        </div>
+
+        <p class="product-name">
+          Lentes de Sol
+        </p>
+
+      </div>
+
+      <div class="product-card">
+
+        <div class="product-img svg-product">
+
+          <img
+            src="{{ url_for('static', filename='img/lentes-contacto.png') }}"
+            alt="Lentes de Contacto"
+          />
+
+        </div>
+
+        <p class="product-name">
+          Lentes de Contacto
+        </p>
+
+      </div>
+
+    </div>
+
+    <a href="{{ url_for('catalogo') }}">
+
+      <button class="btn-explorar">
+
+        Explorar Tienda
+
+      </button>
+
+    </a>
+
+  </div>
+
+</section>
+
+<!-- ===== NOSOTROS ===== -->
+
+<section
+  class="specialists-section"
+  id="nosotros"
+>
+
+  <div class="section-container two-col">
+
+    <div class="specialists-info">
+
+      <h2>
+        Especialistas en Salud Visual
+      </h2>
+
+      <p>
+        Más de 20 años cuidando tu visión
+      </p>
+
+      <button
+        class="btn-conocenos"
+      >
+        Conócenos
+      </button>
+
+      <div class="testimonials">
+
+        <h3>
+          Testimonios de Nuestros Clientes
+        </h3>
+
+        <div class="testimonial-card">
+
+          <div class="testimonial-avatar">
+
+            <div class="avatar-placeholder">
+
+              <svg
+                viewBox="0 0 60 60"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+
+                <circle
+                  cx="30"
+                  cy="30"
+                  r="30"
+                  fill="#f5c5a3"
+                />
+
+                <circle
+                  cx="30"
+                  cy="22"
+                  r="10"
+                  fill="#e8956d"
+                />
+
+                <ellipse
+                  cx="30"
+                  cy="50"
+                  rx="16"
+                  ry="12"
+                  fill="#e8956d"
+                />
+
+              </svg>
+
+            </div>
+
+          </div>
+
+          <div class="testimonial-text">
+
+            <p>
+
+              ❝ me siento satifecha por la atencion , tengo unas gafas espectaculares ❞
+
+            </p>
+
+            <span>
+              – Delia Herazo.
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ===== FORMULARIO ===== -->
+
+    <div
+      class="cita-form"
+      id="cita"
+    >
+
+      <h3>
+        Agenda tu Cita
+      </h3>
+
+      <div class="form-group">
+
+        <label>
+          Nombre
+        </label>
+
+        <input
+          type="text"
+          id="nombre"
+          placeholder="Tu nombre completo"
+        />
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          Correo Electrónico
+        </label>
+
+        <input
+          type="email"
+          id="email"
+          placeholder="Tu correo electrónico"
+        />
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          Selecciona Fecha
+        </label>
+
+        <input
+          type="date"
+          id="fecha"
+        />
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          Hora
+        </label>
+
+        <select id="hora">
+
+          <option value="">
+            Selecciona una hora
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          Mensaje
+        </label>
+
+        <textarea
+          id="mensaje"
+          rows="4"
+          placeholder="Describe tu consulta"
+        ></textarea>
+
+      </div>
+
+      <button
+        class="btn-reservar"
+        onclick="reservarCita()"
+      >
+        Reservar Cita
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ===== FOOTER ===== -->
+
+<footer class="footer">
+
+  <div class="footer-container">
+
+    <span>
+      Síguenos en:
+    </span>
+
+    <a
+      href="https://www.facebook.com/Retinher/"
+      class="social-icon"
+      target="_blank"
+    >
+      Facebook
+    </a>
+
+    <a
+      href="https://www.instagram.com/retinhersas/"
+      class="social-icon"
+      target="_blank"
+    >
+      Instagram
+    </a>
+
+  </div>
+
+</footer>
+
+<!-- ===== MODAL ===== -->
+
+<div
+  class="modal-overlay"
+  id="modalOverlay"
+  onclick="closeModal()"
+>
+
+  <div
+    class="modal"
+    onclick="event.stopPropagation()"
+  >
+
+    <h3>
+      ¡Cita Agendada!
+    </h3>
+
+    <p id="modalMsg"></p>
+
+    <button
+      class="btn-reservar"
+      onclick="closeModal()"
+    >
+      Cerrar
+    </button>
+
+  </div>
+
+</div>
+
+<!-- ===== JS ===== -->
+
+<script
+  src="{{ url_for('static', filename='js/app.js') }}"
+></script>
+
+<script>
+
+const nombre =
+localStorage.getItem(
+  "usuarioNombre"
+);
+
+const email =
+localStorage.getItem(
+  "usuarioEmail"
+);
+
+const btnLogin =
+document.getElementById(
+  "btn-login"
+);
+
+if(nombre && email){
+
+    document.getElementById(
+      "usuario-nombre"
+    ).textContent = nombre;
+
+    document.getElementById(
+      "usuario-email"
+    ).textContent = email;
+
+    if(btnLogin){
+
+        btnLogin.style.display = "none";
+
+    }
+
+}
+
+function cerrarSesion(){
+
+    localStorage.removeItem(
+      "usuarioNombre"
+    );
+
+    localStorage.removeItem(
+      "usuarioEmail"
+    );
+
+    window.location.href =
+    "/login";
+
+}
+
+// HORARIOS DINÁMICOS
+
+const fechaInput =
+document.getElementById(
+  "fecha"
+);
+
+fechaInput.addEventListener(
+  "change",
+  async () => {
+
+    const fecha =
+    fechaInput.value;
+
+    const selectHora =
+    document.getElementById(
+      "hora"
+    );
+
+    selectHora.innerHTML = "";
+
+    const res = await fetch(
+      `/horarios-disponibles/${fecha}`
+    );
+
+    const horarios =
+    await res.json();
+
+    if(horarios.length === 0){
+
+        selectHora.innerHTML = `
+          <option>
+            No hay horarios disponibles
+          </option>
+        `;
+
+        return;
+
+    }
+
+    horarios.forEach(hora => {
+
+        selectHora.innerHTML += `
+          <option value="${hora}">
+            ${hora}
+          </option>
+        `;
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Gafas Hombre | Rethiner</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/css/catalogo_mujer.css"
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+</head>
+
+<body>
+
+    <!-- NAVBAR GLOBAL -->
+
+    {% include 'components/navbar.html' %}
+
+    <!-- TITULO -->
+
+    <h1 class="title">
+        Gafas Hombre
+    </h1>
+
+    <p class="sub">
+        Tecnología visual y elegancia masculina para cada ocasión.
+    </p>
+
+    <!-- PRODUCTOS -->
+
+    <section class="productos">
+
+        {% for producto in productos %}
+
+        <div class="card">
+
+            <img src="/static/img/productos/gafas-hombre/{{ producto.imagen }}">
+
+            <div class="card-body">
+
+                <h2>
+                    {{ producto.nombre }}
+                </h2>
+
+                <p class="tipo">
+                    {{ producto.tipo }}
+                </p>
+
+                <div class="precio">
+
+                    <span class="peso">
+                        COP
+                    </span>
+
+                    <span class="numero">
+                        {{ producto.precio }}
+                    </span>
+
+                </div>
+
+                <button
+                    class="btn"
+                    onclick="agregarCarrito('{{ producto.id }}')"
+                >
+                    Agregar al carrito
+                </button>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </section>
+
+    <script>
+
+        async function agregarCarrito(
+            producto_id
+        ){
+
+            const res = await fetch(
+                "/agregar-carrito",
+                {
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+
+                    body:JSON.stringify({
+                        producto_id
+                    })
+
+                }
+            );
+
+            const data = await res.json();
+
+            alert(data.mensaje);
+
+        }
+
+    </script>
+
+</body>
+</html>

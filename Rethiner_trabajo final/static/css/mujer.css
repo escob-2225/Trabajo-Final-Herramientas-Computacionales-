@@ -1,0 +1,280 @@
+body{
+
+    margin:0;
+
+    font-family:Arial, Helvetica, sans-serif;
+
+    background:#eef2f7;
+}
+
+/* NAVBAR */
+
+.navbar-mujer{
+
+    width:100%;
+
+    height:85px;
+
+    background:#17345c;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:0 50px;
+
+    box-sizing:border-box;
+
+    box-shadow:0 2px 12px rgba(0,0,0,0.08);
+}
+
+.logo-link{
+
+    text-decoration:none;
+}
+
+.logo-container{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+}
+
+.logo-img{
+
+    width:55px;
+
+    height:55px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+}
+
+.logo-textos h1{
+
+    margin:0;
+
+    color:white;
+
+    font-size:30px;
+}
+
+.logo-textos p{
+
+    margin:0;
+
+    color:#d7e4ff;
+
+    font-size:13px;
+}
+
+/* RIGHT */
+
+.nav-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:25px;
+}
+
+.nav-link{
+
+    color:white;
+
+    text-decoration:none;
+
+    font-size:18px;
+
+    font-weight:bold;
+}
+
+/* CARRITO */
+
+.cart-icon{
+
+    position:relative;
+
+    font-size:28px;
+
+    cursor:pointer;
+}
+
+.cart-count{
+
+    position:absolute;
+
+    top:-8px;
+
+    right:-10px;
+
+    width:20px;
+
+    height:20px;
+
+    border-radius:50%;
+
+    background:red;
+
+    color:white;
+
+    font-size:12px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+}
+
+/* TITULO */
+
+.titulo-section{
+
+    text-align:center;
+
+    margin:60px 0 40px 0;
+}
+
+.titulo-section h2{
+
+    color:#17345c;
+
+    font-size:42px;
+
+    margin-bottom:10px;
+}
+
+.titulo-section p{
+
+    color:#5f6b7a;
+
+    font-size:18px;
+}
+
+/* GRID */
+
+.productos-grid{
+
+    width:90%;
+
+    margin:auto;
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+
+    gap:35px;
+
+    padding-bottom:80px;
+}
+
+/* CARD */
+
+.producto-card{
+
+    background:white;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    box-shadow:0 5px 18px rgba(0,0,0,0.08);
+
+    transition:0.3s;
+}
+
+.producto-card:hover{
+
+    transform:translateY(-5px);
+}
+
+/* IMG */
+
+.producto-img{
+
+    width:100%;
+
+    height:280px;
+
+    overflow:hidden;
+}
+
+.producto-img img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+
+    transition:0.3s;
+}
+
+.producto-card:hover img{
+
+    transform:scale(1.05);
+}
+
+/* INFO */
+
+.producto-info{
+
+    padding:25px;
+
+    text-align:center;
+}
+
+.producto-info h3{
+
+    color:#17345c;
+
+    font-size:26px;
+
+    margin-bottom:15px;
+}
+
+.precio{
+
+    color:#17345c;
+
+    font-size:24px;
+
+    font-weight:bold;
+
+    margin-bottom:20px;
+}
+
+/* BOTON */
+
+.btn-carrito{
+
+    background:#17345c;
+
+    color:white;
+
+    border:none;
+
+    padding:13px 24px;
+
+    border-radius:10px;
+
+    font-size:15px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:0.3s;
+}
+
+.btn-carrito:hover{
+
+    background:#21497e;
+}

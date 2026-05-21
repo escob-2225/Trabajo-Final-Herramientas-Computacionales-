@@ -1,0 +1,44 @@
+<nav class="navbar">
+
+    <div class="logo">
+
+        <img src="/static/img/logo.png">
+
+        <div class="logo-text">
+
+            <h1>RETHINER</h1>
+
+            <p>Óptica y Oftalmología</p>
+
+        </div>
+
+    </div>
+
+    <div class="nav-right">
+        
+
+        <a href="/catalogo" class="btn-volver">
+            ← Volver
+        </a>
+
+        {% if session.get("usuario_id") %}
+
+        <a href="/carrito" class="cart"></a>
+
+            <a href="/carrito" class="cart">
+
+    <i class="bi bi-bag-fill"></i>
+
+    <div class="cart-count" id="cart-count">
+        {{ contador }}
+    </div>
+
+</a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</nav>

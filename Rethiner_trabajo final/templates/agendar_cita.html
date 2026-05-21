@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendar Cita – Rethiner</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="estilos-generales.css">
+</head>
+<body class="pagina-cita">
+  <div class="cita-page">
+    <button type="button" class="btn-atras" onclick="location.href='index.html'">← Volver al inicio</button>
+
+    <section id="formulario" class="cita-form-standalone">
+      <h2>Agendar cita</h2>
+      <form id="citaForm">
+        <div class="form-group">
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" name="nombre" required>
+        </div>
+
+        <div class="form-group">
+          <label for="telefono">Teléfono</label>
+          <input type="tel" id="telefono" name="telefono" required>
+        </div>
+
+        <div class="form-group">
+          <label for="fecha">Fecha</label>
+          <input type="date" id="fecha" name="fecha" required>
+        </div>
+
+        <div class="form-group">
+          <label>Horario</label>
+          <div class="time-slots">
+            <button type="button" class="slot" data-hora="9:00">9:00</button>
+            <button type="button" class="slot" data-hora="10:00">10:00</button>
+            <button type="button" class="slot" data-hora="11:00">11:00</button>
+            <button type="button" class="slot" data-hora="12:00">12:00</button>
+            <button type="button" class="slot" data-hora="14:00">14:00</button>
+            <button type="button" class="slot" data-hora="15:00">15:00</button>
+          </div>
+        </div>
+
+        <p id="mensaje" style="display:none; margin-top:12px; font-weight:bold;"></p>
+
+        <button type="submit" class="btn-reservar">Confirmar cita</button>
+      </form>
+    </section>
+  </div>
+
+  <script>
+    let horarioSeleccionado = null;
+
+    document.querySelectorAll('.slot').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.slot').forEach((s) => s.classList.remove('selected'));
+        btn.classList.add('selected');
+        horarioSeleccionado = btn.dataset.hora;
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const fechaInput = document.getElementById('fecha');
+      const hoy = new Date();
+      fechaInput.min = hoy.toISOString().split('T')[0];
+
+      try {
+        const sesion = JSON.parse(localStorage.getItem('rethiner_user') || 'null');
+        if (sesion?.nombre) document.getElementById('nombre').value = sesion.nombre;
+      } catch { /* ignore */ }
+    });
+
+    document.getElementById('citaForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('mensaje');
+      msg.style.display = 'none';
+
+      if (!horarioSeleccionado) {
+        msg.textContent = 'Selecciona un horario.';
+        msg.style.color = '#c0392b';
+        msg.style.display = 'block';
+        return;
+      }
+
+      const nombre = document.getElementById('nombre').value.trim();
+      const telefono = document.getElementById('telefono').value.trim();
+      const fecha = document.getElementById('fecha').value;
+
+      let usuarioId = null;
+      try {
+        const sesion = JSON.parse(localStorage.getItem('rethiner_user') || 'null');
+        usuarioId = sesion?.id;
+      } catch { /* ignore */ }
+
+      try {
+        const res = await fetch('/api/citas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, telefono, fecha, horario: horarioSeleccionado, usuarioId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al guardar la cita.');
+
+        msg.textContent = '✔ Cita agendada correctamente. Redirigiendo...';
+        msg.style.color = '#27ae60';
+        msg.style.display = 'block';
+        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+      } catch (err) {
+        msg.textContent = err.message.includes('fetch')
+          ? 'Abre el sitio con "python3 server.py" en http://localhost:3000'
+          : err.message;
+        msg.style.color = '#c0392b';
+        msg.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

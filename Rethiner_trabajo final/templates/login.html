@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Iniciar Sesión | Rethiner</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Montserrat',sans-serif;
+    }
+
+    body{
+
+      min-height:100vh;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      background:
+      linear-gradient(
+      135deg,
+      #0f172a,
+      #1e3a8a,
+      #2563eb
+      );
+
+      overflow:auto;
+
+      padding:30px 15px;
+
+    }
+
+    .bg-blur{
+
+      position:absolute;
+
+      width:450px;
+      height:450px;
+
+      background:rgba(255,255,255,0.08);
+
+      border-radius:50%;
+
+      filter:blur(100px);
+
+    }
+
+    .bg1{
+      top:-100px;
+      left:-100px;
+    }
+
+    .bg2{
+      bottom:-120px;
+      right:-100px;
+    }
+
+    .login-container{
+
+      position:relative;
+
+      width:100%;
+      max-width:380px;
+
+      padding:30px;
+
+      border-radius:24px;
+
+      background:rgba(255,255,255,0.12);
+
+      backdrop-filter:blur(18px);
+
+      border:1px solid rgba(255,255,255,0.18);
+
+      box-shadow:
+      0 20px 60px rgba(0,0,0,0.35);
+
+      color:white;
+
+      z-index:2;
+
+    }
+
+    .logo{
+
+      display:flex;
+      align-items:center;
+      gap:12px;
+
+      margin-bottom:25px;
+
+    }
+
+    .logo-circle{
+
+      width:42px;
+      height:42px;
+
+      border-radius:50%;
+
+      border:3px solid white;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      font-size:18px;
+      font-weight:700;
+
+    }
+
+    .logo h1{
+
+      font-size:34px;
+      font-weight:800;
+
+    }
+
+    .login-title{
+
+      font-size:26px;
+      font-weight:800;
+
+      margin-bottom:10px;
+
+    }
+
+    .login-sub{
+
+      opacity:0.8;
+
+      margin-bottom:22px;
+
+      line-height:1.5;
+
+      font-size:14px;
+
+    }
+
+    .form-group{
+
+      margin-bottom:18px;
+
+    }
+
+    .form-group label{
+
+      display:block;
+
+      margin-bottom:8px;
+
+      font-size:13px;
+      font-weight:600;
+
+      opacity:0.9;
+
+    }
+
+    .form-group input{
+
+      width:100%;
+
+      padding:14px 16px;
+
+      border:none;
+      outline:none;
+
+      border-radius:12px;
+
+      background:rgba(255,255,255,0.14);
+
+      color:white;
+
+      font-size:14px;
+
+    }
+
+    .form-group input::placeholder{
+
+      color:rgba(255,255,255,0.65);
+
+    }
+
+    .forgot{
+
+      display:inline-block;
+
+      margin-top:8px;
+
+      color:#c7d2fe;
+
+      text-decoration:none;
+
+      font-size:13px;
+
+    }
+
+    .login-btn{
+
+      width:100%;
+
+      padding:14px;
+
+      border:none;
+
+      border-radius:12px;
+
+      background:white;
+
+      color:#1e3a8a;
+
+      font-size:15px;
+      font-weight:700;
+
+      cursor:pointer;
+
+      transition:0.3s;
+
+      margin-top:8px;
+
+    }
+
+    .login-btn:hover{
+
+      transform:translateY(-2px);
+
+      background:#e2e8f0;
+
+    }
+
+    .register{
+
+      margin-top:22px;
+
+      text-align:center;
+
+      font-size:14px;
+
+      opacity:0.9;
+
+      line-height:1.6;
+
+    }
+
+    .register a{
+
+      color:white;
+
+      font-weight:700;
+
+      text-decoration:none;
+
+    }
+
+    .back-home{
+
+      position:absolute;
+
+      top:25px;
+      left:25px;
+
+      color:white;
+
+      text-decoration:none;
+
+      font-weight:600;
+
+      z-index:3;
+
+      font-size:14px;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <a href="/" class="back-home">
+    ← Volver al inicio
+  </a>
+
+  <div class="bg-blur bg1"></div>
+  <div class="bg-blur bg2"></div>
+
+  <div class="login-container">
+
+    <div class="logo">
+
+      <div class="logo-circle">
+        ◉
+      </div>
+
+      <h1>Rethiner</h1>
+
+    </div>
+
+    <h2 class="login-title">
+      Bienvenido
+    </h2>
+
+    <p class="login-sub">
+      Inicia sesión para acceder a tu cuenta y gestionar tus citas visuales.
+    </p>
+
+    <div class="form-group">
+
+      <label>Usuario o correo</label>
+
+      <input
+        type="text"
+        id="login-email"
+        placeholder="Usuario o correo electrónico"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label>Contraseña</label>
+
+      <input
+        type="password"
+        id="login-password"
+        placeholder="Ingresa tu contraseña"
+      >
+
+      <a href="#" class="forgot">
+        ¿Olvidaste tu contraseña?
+      </a>
+
+    </div>
+
+    <button
+      class="login-btn"
+      onclick="iniciarSesion()"
+    >
+      Iniciar Sesión
+    </button>
+
+    <div class="register">
+
+      ¿No tienes una cuenta?<br>
+
+      <a href="/crear-cuenta">
+        Crear Cuenta
+      </a>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    async function iniciarSesion(){
+
+        const email =
+        document.getElementById("login-email").value;
+
+        const password =
+        document.getElementById("login-password").value;
+
+        const res = await fetch("/iniciar-sesion", {
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify({
+                email,
+                password
+            })
+
+        });
+
+        const data = await res.json();
+
+        alert(data.mensaje);
+
+        if(data.status === "ok"){
+
+    localStorage.setItem(
+      "usuarioNombre",
+      data.nombre
+    );
+
+    localStorage.setItem(
+      "usuarioEmail",
+      data.email
+    );
+
+    window.location.href = "/";
+
+}
+    }
+
+  </script>
+
+</body>
+</html>

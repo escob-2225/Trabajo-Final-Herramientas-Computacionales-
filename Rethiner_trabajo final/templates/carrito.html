@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Carrito | Rethiner</title>
+
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/static/css/carrito.css"
+    >
+
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <h1>
+            Carrito de Compras
+        </h1>
+
+        <a href="/catalogo" class="volver">
+            ← Volver
+        </a>
+
+    </nav>
+
+    <div class="container">
+
+        <div class="usuario">
+
+            <h2>
+                {{ session["usuario_nombre"] }}
+            </h2>
+
+        </div>
+
+        <div class="productos">
+
+            {% for producto in productos %}
+
+            <div class="card">
+
+                <div class="left">
+
+                    <img src="/static/img/productos/{{ producto[4] }}/{{ producto[3] }}">
+
+                    <div class="info">
+
+                        <h3>
+                            {{ producto[1] }}
+                        </h3>
+
+                        <p>
+                            Cantidad:
+                            {{ producto[5] }}
+                        </p>
+
+                        <div class="cantidad">
+<a
+href="/restar-carrito/{{ producto[0] }}"
+class="cantidad-btn"
+>
+
+    -
+
+</a>
+
+                            <span>
+                                {{ producto[5] }}
+                            </span>
+
+                            <a
+href="/sumar-carrito/{{ producto[0] }}"
+class="cantidad-btn"
+>
+
+    +
+
+</a>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div>
+
+                    <p class="precio">
+
+                        COP {{ producto[6] }}
+
+                    </p>
+
+                    <br>
+
+                    <a
+href="/eliminar-carrito/{{ producto[0] }}"
+class="eliminar"
+>
+
+    Eliminar
+
+</a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <div class="total">
+
+            <h2>
+                Total
+            </h2>
+
+            <h2>
+                COP {{ total }}
+            </h2>
+
+        </div>
+<div class="contenedor-pago">
+
+    <button class="btn-pagar">
+
+        Proceder al Pago
+
+    </button>
+
+</div>
+    </div>
+
+</body>
+</html>
