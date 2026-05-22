@@ -1,4 +1,9 @@
+import os
+
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, session, redirect
+
+load_dotenv()
 from flask_mysqldb import MySQL
 from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
@@ -18,30 +23,32 @@ def inject_footer_year():
 # =========================
 # CONFIGURACIÓN GENERAL
 # =========================
-app.secret_key = 'rethiner_secret_key'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+app.secret_key = os.environ.get("SECRET_KEY", "rethiner_secret_key")
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
 
 bcrypt = Bcrypt(app)
 
 # =========================
 # CONFIGURACIÓN MYSQL
 # =========================
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'optica_db'
+app.config["MYSQL_HOST"] = os.environ.get("MYSQL_HOST", "localhost")
+app.config["MYSQL_USER"] = os.environ.get("MYSQL_USER", "root")
+app.config["MYSQL_PASSWORD"] = os.environ.get("MYSQL_PASSWORD", "")
+app.config["MYSQL_DB"] = os.environ.get(
+    "MYSQL_DATABASE", os.environ.get("MYSQL_DB", "optica_db")
+)
+app.config["MYSQL_PORT"] = int(os.environ.get("MYSQL_PORT", "3306"))
 
 mysql = MySQL(app)
 
 # =========================
 # CONFIGURACIÓN EMAIL
 # =========================
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-
-app.config['MAIL_USERNAME'] = 'rethinerr@gmail.com'
-app.config['MAIL_PASSWORD'] = 'opgskukucjhsmfqk'
+app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", "587"))
+app.config["MAIL_USE_TLS"] = os.environ.get("MAIL_USE_TLS", "true").lower() == "true"
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "")
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "")
 
 mail = Mail(app)
 
