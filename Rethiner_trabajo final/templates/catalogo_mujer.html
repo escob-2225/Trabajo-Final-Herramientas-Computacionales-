@@ -22,6 +22,8 @@
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+    <link rel="stylesheet" href="/static/css/rethiner-alert.css">
+
 </head>
 
 <body>
@@ -86,6 +88,10 @@
 
     </section>
 
+    {% include 'components/footer.html' %}
+
+    <script src="/static/js/rethiner-alert.js"></script>
+
     <script>
 
         async function agregarCarrito(
@@ -111,7 +117,7 @@
 
             const data = await res.json();
 
-            alert(data.mensaje);
+            await rethinerAlert(data.mensaje);
 
         }
 

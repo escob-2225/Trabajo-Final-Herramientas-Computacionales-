@@ -10,11 +10,35 @@ function getUsuarioSesion() {
 }
 
 function guardarSesion(user) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+  const datos = {
+    id: user.id,
+    identificacion: user.identificacion,
+    nombre: user.nombre,
+    email: user.email,
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(datos));
 }
 
-function cerrarSesion() {
+async function cerrarSesion() {
+  if (typeof RethinerAlert === 'function') {
+    await RethinerAlert.show({
+      title: '¡Hasta pronto!',
+      text: 'Has cerrado sesión correctamente.',
+      type: 'success',
+    });
+  }
+
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem('usuarioNombre');
+  localStorage.removeItem('usuarioEmail');
+
+  try {
+    await fetch('/cerrar-sesion', { credentials: 'same-origin' });
+  } catch (_) {
+    /* ignorar error de red */
+  }
+
+  window.location.href = '/login';
 }
 
 async function apiPost(url, body) {
@@ -32,7 +56,9 @@ async function apiPost(url, body) {
 
 function mostrarError(el, mensaje) {
   if (!el) {
-    alert(mensaje);
+    if (typeof rethinerAlert === 'function') {
+      rethinerAlert(mensaje, 'error');
+    }
     return;
   }
   el.textContent = mensaje;
@@ -42,7 +68,9 @@ function mostrarError(el, mensaje) {
 
 function mostrarExito(el, mensaje) {
   if (!el) {
-    alert(mensaje);
+    if (typeof rethinerAlert === 'function') {
+      rethinerAlert(mensaje, 'success');
+    }
     return;
   }
   el.textContent = mensaje;

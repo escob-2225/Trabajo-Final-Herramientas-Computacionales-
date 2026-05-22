@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/rethiner-alert.css') }}">
 
   <style>
 
@@ -192,6 +193,47 @@
 
     }
 
+    .id-row{
+
+      display:flex;
+      gap:10px;
+
+    }
+
+    .id-row select{
+
+      flex:0 0 88px;
+
+      padding:14px 10px;
+
+      border:none;
+      outline:none;
+
+      border-radius:12px;
+
+      background:rgba(255,255,255,0.14);
+
+      color:white;
+
+      font-size:14px;
+      font-weight:600;
+
+      cursor:pointer;
+
+    }
+
+    .id-row select option{
+
+      color:#0f172a;
+
+    }
+
+    .id-row input{
+
+      flex:1;
+
+    }
+
     .register-btn{
 
       width:100%;
@@ -313,6 +355,30 @@
 
     <div class="form-group">
 
+      <label>Documento de identidad</label>
+
+      <div class="id-row">
+
+        <select id="tipo-identificacion">
+          <option value="">Tipo</option>
+          <option value="CC">CC</option>
+          <option value="TI">TI</option>
+        </select>
+
+        <input
+          type="text"
+          id="identificacion"
+          placeholder="Número de documento"
+          inputmode="numeric"
+          maxlength="15"
+        >
+
+      </div>
+
+    </div>
+
+    <div class="form-group">
+
       <label>Correo electrónico</label>
 
       <input
@@ -354,18 +420,27 @@
 
   </div>
 
+  <script src="{{ url_for('static', filename='js/rethiner-alert.js') }}"></script>
+
   <script>
 
     async function crearCuenta(){
 
-      const nombre =
-      document.getElementById("nombre").value;
+      const nombre = document.getElementById("nombre").value.trim();
+      const tipo_identificacion = document.getElementById("tipo-identificacion").value;
+      const identificacion = document.getElementById("identificacion").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
 
-      const email =
-      document.getElementById("email").value;
+      if (!tipo_identificacion) {
+        await rethinerAlert("Selecciona el tipo de documento (CC o TI).", "warning");
+        return;
+      }
 
-      const password =
-      document.getElementById("password").value;
+      if (!identificacion) {
+        await rethinerAlert("Ingresa tu número de identificación.", "warning");
+        return;
+      }
 
       const res = await fetch("/registro", {
 
@@ -377,6 +452,8 @@
 
         body:JSON.stringify({
           nombre,
+          tipo_identificacion,
+          identificacion,
           email,
           password
         })
@@ -385,12 +462,19 @@
 
       const data = await res.json();
 
-      alert(data.mensaje);
-
-      if(data.status === "ok"){
-
+      if (data.status === "ok") {
+        await RethinerAlert.show({
+          title: "¡Cuenta creada!",
+          text: "Tu cuenta fue registrada correctamente. Ya puedes iniciar sesión.",
+          type: "success"
+        });
         window.location.href = "/login";
-
+      } else {
+        await RethinerAlert.show({
+          title: "No se pudo registrar",
+          text: data.mensaje || "Revisa los datos e intenta de nuevo.",
+          type: "error"
+        });
       }
 
     }

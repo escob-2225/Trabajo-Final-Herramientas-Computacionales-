@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/rethiner-alert.css') }}">
 
   <style>
 
@@ -314,17 +315,18 @@
     </h2>
 
     <p class="login-sub">
-      Inicia sesión para acceder a tu cuenta y gestionar tus citas visuales.
+      Inicia sesión con tu correo para acceder a tu cuenta y gestionar tus citas visuales.
     </p>
 
     <div class="form-group">
 
-      <label>Usuario o correo</label>
+      <label>Correo electrónico</label>
 
       <input
-        type="text"
+        type="email"
         id="login-email"
-        placeholder="Usuario o correo electrónico"
+        placeholder="tu@email.com"
+        autocomplete="email"
       >
 
     </div>
@@ -364,15 +366,26 @@
 
   </div>
 
+  <script src="{{ url_for('static', filename='js/rethiner-alert.js') }}"></script>
+
   <script>
 
     async function iniciarSesion(){
 
         const email =
-        document.getElementById("login-email").value;
+        document.getElementById("login-email").value.trim();
 
         const password =
         document.getElementById("login-password").value;
+
+        if (!email) {
+          await RethinerAlert.show({
+            title: "Correo requerido",
+            text: "Ingresa tu correo electrónico.",
+            type: "warning"
+          });
+          return;
+        }
 
         const res = await fetch("/iniciar-sesion", {
 
@@ -381,6 +394,8 @@
             headers:{
                 "Content-Type":"application/json"
             },
+
+            credentials: "same-origin",
 
             body:JSON.stringify({
                 email,
@@ -391,23 +406,27 @@
 
         const data = await res.json();
 
-        alert(data.mensaje);
+        if (data.status === "ok") {
+          await RethinerAlert.show({
+            title: "¡Bienvenido!",
+            text: "Has iniciado sesión correctamente.",
+            type: "success"
+          });
 
-        if(data.status === "ok"){
-
-    localStorage.setItem(
-      "usuarioNombre",
-      data.nombre
-    );
-
-    localStorage.setItem(
-      "usuarioEmail",
-      data.email
-    );
-
-    window.location.href = "/";
-
-}
+          localStorage.setItem("rethiner_user", JSON.stringify({
+            id: data.id,
+            identificacion: data.identificacion,
+            nombre: data.nombre,
+            email: data.email
+          }));
+          window.location.href = "/";
+        } else {
+          await RethinerAlert.show({
+            title: "No se pudo iniciar sesión",
+            text: data.mensaje || "Revisa tus datos e intenta de nuevo.",
+            type: "error"
+          });
+        }
     }
 
   </script>

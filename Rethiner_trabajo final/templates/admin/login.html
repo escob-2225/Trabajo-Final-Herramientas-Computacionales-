@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin | Rethiner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/rethiner-alert.css') }}">
+</head>
+<body class="admin-body admin-login-page">
+
+  <div class="admin-login-card">
+    <h1>Panel de administración</h1>
+    <p>Acceso exclusivo para gestionar productos y citas de Rethiner.</p>
+
+    <form id="admin-login-form">
+      <div class="admin-form-group">
+        <label for="admin-email">Correo</label>
+        <input type="email" id="admin-email" placeholder="admin@rethiner.com" required>
+      </div>
+      <div class="admin-form-group">
+        <label for="admin-password">Contraseña</label>
+        <input type="password" id="admin-password" placeholder="Tu contraseña" required>
+      </div>
+      <button type="submit" class="admin-btn admin-btn-primary" id="btn-admin-login">
+        Ingresar
+      </button>
+    </form>
+
+    <p class="admin-hint">
+      Usuario por defecto: <strong>admin@rethiner.com</strong> / <strong>admin1234</strong><br>
+      <a href="/">← Volver al sitio</a>
+    </p>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/rethiner-alert.js') }}"></script>
+  <script>
+    document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-admin-login');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/admin/iniciar-sesion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('admin-email').value.trim(),
+            password: document.getElementById('admin-password').value,
+          }),
+        });
+        const data = await res.json();
+
+        if (data.status === 'ok') {
+          await RethinerAlert.show({
+            title: '¡Bienvenido!',
+            text: data.mensaje,
+            type: 'success',
+          });
+          window.location.href = '/admin/dashboard';
+        } else {
+          await rethinerAlert(data.mensaje || 'No se pudo iniciar sesión.', 'error');
+        }
+      } catch {
+        await rethinerAlert('Error de conexión con el servidor.', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

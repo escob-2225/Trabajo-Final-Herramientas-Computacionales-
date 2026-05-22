@@ -2,14 +2,24 @@ from flask import Flask, render_template, request, jsonify, session, redirect
 from flask_mysqldb import MySQL
 from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
+
+from admin_panel import register_admin_routes
 
 app = Flask(__name__)
+
+PRODUCTOS_ACTIVOS = " AND (estado = 'activo' OR estado IS NULL) "
+
+
+@app.context_processor
+def inject_footer_year():
+    return {"current_year": datetime.now().year}
 
 # =========================
 # CONFIGURACIÓN GENERAL
 # =========================
 app.secret_key = 'rethiner_secret_key'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
 bcrypt = Bcrypt(app)
 
@@ -34,6 +44,108 @@ app.config['MAIL_USERNAME'] = 'rethinerr@gmail.com'
 app.config['MAIL_PASSWORD'] = 'opgskukucjhsmfqk'
 
 mail = Mail(app)
+
+ensure_admin_schema = register_admin_routes(app, mysql, bcrypt)
+
+
+def normalizar_identificacion(valor):
+    if valor is None:
+        return None
+    limpio = "".join(c for c in str(valor).strip() if c.isdigit())
+    return limpio or None
+
+
+def construir_identificacion(tipo, numero):
+    tipo_limpio = (tipo or "").strip().upper()
+    if tipo_limpio not in ("TI", "CC"):
+        return None
+    digitos = normalizar_identificacion(numero)
+    if not digitos or len(digitos) < 6:
+        return None
+    return f"{tipo_limpio}{digitos}"
+
+
+def ensure_usuario_schema():
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute(
+            "ALTER TABLE usuarios ADD COLUMN identificacion VARCHAR(30) NULL UNIQUE"
+        )
+        mysql.connection.commit()
+    except Exception:
+        mysql.connection.rollback()
+
+    try:
+        cursor.execute(
+            "ALTER TABLE citas ADD COLUMN usuario_id INT NULL"
+        )
+        mysql.connection.commit()
+    except Exception:
+        mysql.connection.rollback()
+
+    cursor.execute(
+        "SELECT identificacion FROM usuarios WHERE rol = 'admin' LIMIT 1"
+    )
+    admin = cursor.fetchone()
+    if admin and not admin[0]:
+        cursor.execute(
+            "UPDATE usuarios SET identificacion = %s WHERE rol = 'admin' LIMIT 1",
+            ("1000000001",),
+        )
+        mysql.connection.commit()
+
+    cursor.close()
+
+
+def establecer_sesion_usuario(usuario):
+    session.permanent = True
+    session["usuario_id"] = usuario[0]
+    session["usuario_nombre"] = usuario[1]
+    session["usuario_email"] = usuario[2]
+    session["usuario_identificacion"] = usuario[4]
+
+
+def usuario_a_json(usuario):
+    return {
+        "id": usuario[0],
+        "nombre": usuario[1],
+        "email": usuario[2],
+        "identificacion": usuario[4],
+    }
+
+
+def fetch_productos_catalogo(categoria):
+    cursor = mysql.connection.cursor()
+    cursor.execute(
+        f"""
+        SELECT id, nombre, tipo, precio, imagen
+        FROM productos
+        WHERE categoria = %s{PRODUCTOS_ACTIVOS}
+        """,
+        (categoria,),
+    )
+    productos_db = cursor.fetchall()
+    cursor.close()
+
+    productos = []
+    for producto in productos_db:
+        productos.append({
+            "id": producto[0],
+            "nombre": producto[1],
+            "tipo": producto[2],
+            "precio": producto[3],
+            "imagen": producto[4],
+        })
+    return productos
+
+
+@app.before_request
+def init_db_schema_once():
+    if not app.config.get("SCHEMA_READY"):
+        ensure_admin_schema()
+        ensure_usuario_schema()
+        app.config["SCHEMA_READY"] = True
+
 
 # =========================
 # TEST EMAIL
@@ -84,40 +196,9 @@ def catalogo():
 @app.route("/catalogo/mujer")
 def catalogo_mujer():
 
-    cursor = mysql.connection.cursor()
-
-    cursor.execute("""
-        SELECT
-        id,
-        nombre,
-        tipo,
-        precio,
-        imagen
-        FROM productos
-        WHERE categoria='mujer'
-    """)
-
-    productos_db = cursor.fetchall()
-
-    cursor.close()
-
-    productos = []
-
-    for producto in productos_db:
-
-        productos.append({
-
-            "id": producto[0],
-            "nombre": producto[1],
-            "tipo": producto[2],
-            "precio": producto[3],
-            "imagen": producto[4]
-
-        })
-
     return render_template(
         "catalogo_mujer.html",
-        productos=productos
+        productos=fetch_productos_catalogo("mujer"),
     )
 
 # =========================
@@ -126,40 +207,9 @@ def catalogo_mujer():
 @app.route("/catalogo/hombre")
 def catalogo_hombre():
 
-    cursor = mysql.connection.cursor()
-
-    cursor.execute("""
-        SELECT
-        id,
-        nombre,
-        tipo,
-        precio,
-        imagen
-        FROM productos
-        WHERE categoria='hombre'
-    """)
-
-    productos_db = cursor.fetchall()
-
-    cursor.close()
-
-    productos = []
-
-    for producto in productos_db:
-
-        productos.append({
-
-            "id": producto[0],
-            "nombre": producto[1],
-            "tipo": producto[2],
-            "precio": producto[3],
-            "imagen": producto[4]
-
-        })
-
     return render_template(
         "catalogo_hombre.html",
-        productos=productos
+        productos=fetch_productos_catalogo("hombre"),
     )
 # =========================
 # CATÁLOGO SOL
@@ -167,40 +217,9 @@ def catalogo_hombre():
 @app.route("/catalogo/sol")
 def catalogo_sol():
 
-    cursor = mysql.connection.cursor()
-
-    cursor.execute("""
-        SELECT
-        id,
-        nombre,
-        tipo,
-        precio,
-        imagen
-        FROM productos
-        WHERE categoria='sol'
-    """)
-
-    productos_db = cursor.fetchall()
-
-    cursor.close()
-
-    productos = []
-
-    for producto in productos_db:
-
-        productos.append({
-
-            "id": producto[0],
-            "nombre": producto[1],
-            "tipo": producto[2],
-            "precio": producto[3],
-            "imagen": producto[4]
-
-        })
-
     return render_template(
         "catalogo_sol.html",
-        productos=productos
+        productos=fetch_productos_catalogo("sol"),
     )
 # =========================
 # CATÁLOGO MARCOS
@@ -208,80 +227,18 @@ def catalogo_sol():
 @app.route("/catalogo/marcos")
 def catalogo_marcos():
 
-    cursor = mysql.connection.cursor()
-
-    cursor.execute("""
-        SELECT
-        id,
-        nombre,
-        tipo,
-        precio,
-        imagen
-        FROM productos
-        WHERE categoria='marcos'
-    """)
-
-    productos_db = cursor.fetchall()
-
-    cursor.close()
-
-    productos = []
-
-    for producto in productos_db:
-
-        productos.append({
-
-            "id": producto[0],
-            "nombre": producto[1],
-            "tipo": producto[2],
-            "precio": producto[3],
-            "imagen": producto[4]
-
-        })
-
     return render_template(
         "catalogo_marcos.html",
-        productos=productos
+        productos=fetch_productos_catalogo("marcos"),
     )# =========================
 # CATÁLOGO LENTES CONTACTO
 # =========================
 @app.route("/catalogo/contacto")
 def catalogo_contacto():
 
-    cursor = mysql.connection.cursor()
-
-    cursor.execute("""
-        SELECT
-        id,
-        nombre,
-        tipo,
-        precio,
-        imagen
-        FROM productos
-        WHERE categoria='contacto'
-    """)
-
-    productos_db = cursor.fetchall()
-
-    cursor.close()
-
-    productos = []
-
-    for producto in productos_db:
-
-        productos.append({
-
-            "id": producto[0],
-            "nombre": producto[1],
-            "tipo": producto[2],
-            "precio": producto[3],
-            "imagen": producto[4]
-
-        })
-
     return render_template(
         "catalogo_contacto.html",
-        productos=productos
+        productos=fetch_productos_catalogo("contacto"),
     )
 # =========================
 # AGREGAR AL CARRITO
@@ -304,6 +261,20 @@ def agregar_carrito():
     usuario_id = session["usuario_id"]
 
     cursor = mysql.connection.cursor()
+
+    cursor.execute(
+        f"""
+        SELECT id FROM productos
+        WHERE id = %s{PRODUCTOS_ACTIVOS}
+        """,
+        (producto_id,),
+    )
+    if not cursor.fetchone():
+        cursor.close()
+        return jsonify({
+            "status": "error",
+            "mensaje": "Este producto no está disponible.",
+        })
 
     # VERIFICAR SI YA EXISTE
     cursor.execute("""
@@ -424,6 +395,7 @@ def carrito():
         ON carrito.producto_id = productos.id
 
         WHERE carrito.usuario_id=%s
+        AND (productos.estado = 'activo' OR productos.estado IS NULL)
     """, (
         usuario_id,
     ))
@@ -563,55 +535,78 @@ def registro_page():
 @app.route("/registro", methods=["POST"])
 def registro():
 
-    data = request.get_json()
+    data = request.get_json() or {}
 
-    nombre = data.get("nombre")
-    email = data.get("email")
-    password = data.get("password")
+    nombre = (data.get("nombre") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+    tipo_identificacion = (data.get("tipo_identificacion") or "").strip().upper()
+    identificacion = construir_identificacion(
+        tipo_identificacion,
+        data.get("identificacion"),
+    )
+
+    if not nombre or not email or not password or not identificacion:
+        return jsonify({
+            "status": "error",
+            "mensaje": "Completa nombre, tipo y número de documento, correo y contraseña.",
+        })
+
+    if tipo_identificacion not in ("TI", "CC"):
+        return jsonify({
+            "status": "error",
+            "mensaje": "Selecciona un tipo de documento válido (CC o TI).",
+        })
 
     cursor = mysql.connection.cursor()
 
-    # VERIFICAR SI YA EXISTE
     cursor.execute(
-        "SELECT * FROM usuarios WHERE email=%s",
-        (email,)
+        "SELECT id FROM usuarios WHERE identificacion = %s",
+        (identificacion,),
     )
 
-    usuario = cursor.fetchone()
-
-    if usuario:
-
+    if cursor.fetchone():
         cursor.close()
-
         return jsonify({
             "status": "error",
-            "mensaje": "El correo ya se encuentra registrado."
+            "mensaje": "Ya existe una cuenta registrada con esta identificación.",
         })
 
-    # ENCRIPTAR PASSWORD
-    password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+    cursor.execute(
+        "SELECT id FROM usuarios WHERE LOWER(email) = %s",
+        (email,),
+    )
 
-    # GUARDAR USUARIO
-    cursor.execute("""
-        INSERT INTO usuarios(
-            nombre,
-            email,
-            password
-        )
-        VALUES(%s, %s, %s)
-    """, (
-        nombre,
-        email,
-        password_hash
-    ))
+    if cursor.fetchone():
+        cursor.close()
+        return jsonify({
+            "status": "error",
+            "mensaje": "El correo ya se encuentra registrado.",
+        })
+
+    password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+
+    cursor.execute(
+        """
+        INSERT INTO usuarios (nombre, email, password, identificacion, rol)
+        VALUES (%s, %s, %s, %s, 'cliente')
+        """,
+        (nombre, email, password_hash, identificacion),
+    )
 
     mysql.connection.commit()
-
+    nuevo_id = cursor.lastrowid
     cursor.close()
 
     return jsonify({
         "status": "ok",
-        "mensaje": "Cuenta creada correctamente"
+        "mensaje": "Cuenta creada correctamente. Usa tu correo electrónico para iniciar sesión.",
+        "usuario": {
+            "id": nuevo_id,
+            "nombre": nombre,
+            "email": email,
+            "identificacion": identificacion,
+        },
     })
 
 # =========================
@@ -620,52 +615,66 @@ def registro():
 @app.route("/iniciar-sesion", methods=["POST"])
 def iniciar_sesion():
 
-    data = request.get_json()
+    data = request.get_json() or {}
 
-    email = data.get("email")
-    password = data.get("password")
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+
+    if not email or not password:
+        return jsonify({
+            "status": "error",
+            "mensaje": "Ingresa tu correo electrónico y contraseña.",
+        })
 
     cursor = mysql.connection.cursor()
 
     cursor.execute(
-        "SELECT * FROM usuarios WHERE email=%s",
-        (email,)
+        """
+        SELECT id, nombre, email, password, identificacion
+        FROM usuarios
+        WHERE LOWER(email) = %s AND (rol IS NULL OR rol = 'cliente')
+        """,
+        (email,),
     )
 
     usuario = cursor.fetchone()
-
     cursor.close()
 
-    # USUARIO NO EXISTE
     if not usuario:
-
         return jsonify({
             "status": "error",
-            "mensaje": "La cuenta ingresada no se encuentra registrada."
+            "mensaje": "No existe una cuenta con este correo. Crea tu cuenta primero.",
         })
 
-    # VALIDAR CONTRASEÑA
-    password_correcta = bcrypt.check_password_hash(
-        usuario[3],
-        password
-    )
-
-    if not password_correcta:
-
+    if not bcrypt.check_password_hash(usuario[3], password):
         return jsonify({
             "status": "error",
-            "mensaje": "La contraseña ingresada es incorrecta."
+            "mensaje": "La contraseña ingresada es incorrecta.",
         })
 
-    # CREAR SESIÓN
-    session["usuario_id"] = usuario[0]
-    session["usuario_nombre"] = usuario[1]
+    establecer_sesion_usuario(usuario)
+    perfil = usuario_a_json(usuario)
 
     return jsonify({
         "status": "ok",
-        "mensaje": f"Bienvenido {usuario[1]}",
-        "nombre": usuario[1],
-        "email": usuario[2]
+        "mensaje": f"Bienvenido {perfil['nombre']}",
+        **perfil,
+    })
+
+
+@app.route("/api/usuario-actual")
+def usuario_actual():
+    if "usuario_id" not in session:
+        return jsonify({"status": "error", "mensaje": "Sin sesión"}), 401
+
+    return jsonify({
+        "status": "ok",
+        "usuario": {
+            "id": session["usuario_id"],
+            "nombre": session.get("usuario_nombre"),
+            "email": session.get("usuario_email"),
+            "identificacion": session.get("usuario_identificacion"),
+        },
     })
 
 # =========================
@@ -676,8 +685,30 @@ def cerrar_sesion():
 
     session.pop("usuario_id", None)
     session.pop("usuario_nombre", None)
+    session.pop("usuario_email", None)
+    session.pop("usuario_identificacion", None)
 
     return redirect("/")
+def normalizar_hora(hora):
+    """Unifica formatos 06:00, 06:00:00, timedelta, etc."""
+    if hora is None:
+        return None
+    if isinstance(hora, time):
+        return f"{hora.hour:02d}:{hora.minute:02d}"
+    if hasattr(hora, "seconds") and not isinstance(hora, str):
+        total = int(hora.total_seconds())
+        h = total // 3600
+        m = (total % 3600) // 60
+        return f"{h:02d}:{m:02d}"
+    texto = str(hora).strip()
+    if not texto:
+        return None
+    partes = texto.split(":")
+    if len(partes) < 2:
+        return texto
+    return f"{int(partes[0]):02d}:{int(partes[1]):02d}"
+
+
 # =========================
 # HORARIOS DISPONIBLES
 # =========================
@@ -696,7 +727,9 @@ def horarios_disponibles(fecha):
     ocupadas = []
 
     for hora in horas_ocupadas:
-        ocupadas.append(str(hora[0])[:5])
+        hora_norm = normalizar_hora(hora[0])
+        if hora_norm:
+            ocupadas.append(hora_norm)
 
     horarios = []
 
@@ -736,68 +769,62 @@ def horarios_disponibles(fecha):
 @app.route("/contacto", methods=["POST"])
 def contacto():
 
-    data = request.get_json()
+    data = request.get_json() or {}
 
-    nombre = data.get("nombre")
-    email = data.get("email")
-    mensaje = data.get("mensaje")
+    nombre = (data.get("nombre") or "").strip()
+    email = (data.get("email") or "").strip()
+    mensaje = data.get("mensaje") or ""
     fecha = data.get("fecha")
-    hora = data.get("hora")
+    hora = normalizar_hora(data.get("hora"))
+    usuario_id = session.get("usuario_id")
+
+    if usuario_id:
+        if not nombre:
+            nombre = session.get("usuario_nombre") or nombre
+        if not email:
+            email = session.get("usuario_email") or email
+
+    if not nombre or not email or not fecha or not hora:
+        return jsonify({
+            "status": "error",
+            "mensaje": "Completa todos los campos de la cita."
+        }), 400
 
     cursor = mysql.connection.cursor()
 
-    # VERIFICAR SI YA EXISTE
-    cursor.execute(
-        "SELECT * FROM citas WHERE fecha=%s AND hora=%s",
-        (fecha, hora)
-    )
-
-    cita_existente = cursor.fetchone()
-
-    if cita_existente:
-
-        cursor.close()
-
-        return jsonify({
-            "status": "error",
-            "mensaje": "Ese horario ya está ocupado."
-        })
-
-    # GUARDAR CITA
-    cursor.execute("""
-        INSERT INTO citas(
-            nombre,
-            email,
-            fecha,
-            hora,
-            mensaje
+    try:
+        cursor.execute(
+            """
+            SELECT id FROM citas
+            WHERE fecha = %s AND TIME_FORMAT(hora, '%%H:%%i') = %s
+            LIMIT 1
+            """,
+            (fecha, hora),
         )
-        VALUES(%s, %s, %s, %s, %s)
-    """, (
-        nombre,
-        email,
-        fecha,
-        hora,
-        mensaje
-    ))
 
-    mysql.connection.commit()
+        if cursor.fetchone():
+            return jsonify({
+                "status": "error",
+                "mensaje": "Ese horario ya está ocupado."
+            })
 
-    # =========================
-    # ENVIAR CORREO
-    # =========================
-    msg = Message(
+        cursor.execute(
+            """
+            INSERT INTO citas (nombre, email, fecha, hora, mensaje, usuario_id)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (nombre, email, fecha, hora, mensaje, usuario_id),
+        )
 
-        subject='Cita agendada correctamente',
+        mysql.connection.commit()
 
-        sender=app.config['MAIL_USERNAME'],
-
-        recipients=[email]
-
-    )
-
-    msg.body = f'''
-
+        try:
+            msg = Message(
+                subject="Cita agendada correctamente",
+                sender=app.config["MAIL_USERNAME"],
+                recipients=[email],
+            )
+            msg.body = f"""
 Hola {nombre},
 
 Tu cita fue agendada correctamente en Rethiner.
@@ -814,18 +841,27 @@ Duración aproximada:
 Gracias por confiar en nosotros.
 
 Rethiner Óptica y Oftalmología
-'''
+"""
+            mail.send(msg)
+            print("CORREO ENVIADO")
+        except Exception as mail_error:
+            print(f"AVISO: cita guardada pero falló el correo: {mail_error}")
 
-    mail.send(msg)
+        return jsonify({
+            "status": "ok",
+            "mensaje": "Cita agendada correctamente",
+        })
 
-    print("CORREO ENVIADO")
+    except Exception as e:
+        mysql.connection.rollback()
+        print(f"ERROR al agendar cita: {e}")
+        return jsonify({
+            "status": "error",
+            "mensaje": "No se pudo agendar la cita. Intenta de nuevo.",
+        }), 500
 
-    cursor.close()
-
-    return jsonify({
-        "status": "ok",
-        "mensaje": "Cita agendada correctamente"
-    })
+    finally:
+        cursor.close()
 
 # =========================
 # INICIAR SERVIDOR

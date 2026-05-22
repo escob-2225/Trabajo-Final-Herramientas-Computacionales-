@@ -23,6 +23,11 @@
     href="{{ url_for('static', filename='css/estilos-generales.css') }}"
   />
 
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/rethiner-alert.css') }}"
+  />
+
 </head>
 
 <body>
@@ -59,7 +64,7 @@
 
         <span id="usuario-nombre"></span>
 
-        <small id="usuario-email"></small>
+        <small id="usuario-identificacion"></small>
 
       </div>
 
@@ -103,6 +108,7 @@
       </button>
 
       <button
+        type="button"
         class="btn-logout"
         onclick="cerrarSesion()"
       >
@@ -583,6 +589,8 @@
       </div>
 
       <button
+        type="button"
+        id="btn-reservar-cita"
         class="btn-reservar"
         onclick="reservarCita()"
       >
@@ -595,35 +603,7 @@
 
 </section>
 
-<!-- ===== FOOTER ===== -->
-
-<footer class="footer">
-
-  <div class="footer-container">
-
-    <span>
-      Síguenos en:
-    </span>
-
-    <a
-      href="https://www.facebook.com/Retinher/"
-      class="social-icon"
-      target="_blank"
-    >
-      Facebook
-    </a>
-
-    <a
-      href="https://www.instagram.com/retinhersas/"
-      class="social-icon"
-      target="_blank"
-    >
-      Instagram
-    </a>
-
-  </div>
-
-</footer>
+{% include 'components/footer.html' %}
 
 <!-- ===== MODAL ===== -->
 
@@ -658,58 +638,71 @@
 <!-- ===== JS ===== -->
 
 <script
+  src="{{ url_for('static', filename='js/rethiner-alert.js') }}"
+></script>
+
+<script
   src="{{ url_for('static', filename='js/app.js') }}"
 ></script>
 
 <script>
 
-const nombre =
-localStorage.getItem(
-  "usuarioNombre"
-);
+async function aplicarUsuarioEnPagina(usuario) {
+  const btnLogin = document.getElementById("btn-login");
+  const nombreEl = document.getElementById("usuario-nombre");
+  const idEl = document.getElementById("usuario-identificacion");
+  const btnLogout = document.querySelector(".btn-logout");
 
-const email =
-localStorage.getItem(
-  "usuarioEmail"
-);
+  if (!usuario || !usuario.nombre) {
+    if (btnLogout) btnLogout.style.display = "none";
+    return;
+  }
 
-const btnLogin =
-document.getElementById(
-  "btn-login"
-);
+  nombreEl.textContent = usuario.nombre;
+  if (usuario.identificacion) {
+    const id = String(usuario.identificacion).toUpperCase();
+    idEl.textContent = (id.startsWith("TI") || id.startsWith("CC"))
+      ? `${id.slice(0, 2)} ${id.slice(2)}`
+      : `CC ${id}`;
+  } else {
+    idEl.textContent = usuario.email || "";
+  }
 
-if(nombre && email){
+  if (btnLogin) btnLogin.style.display = "none";
+  if (btnLogout) btnLogout.style.display = "";
 
-    document.getElementById(
-      "usuario-nombre"
-    ).textContent = nombre;
+  const nombreInput = document.getElementById("nombre");
+  const emailInput = document.getElementById("email");
+  if (nombreInput && !nombreInput.value) nombreInput.value = usuario.nombre;
+  if (emailInput && !emailInput.value) emailInput.value = usuario.email || "";
+}
 
-    document.getElementById(
-      "usuario-email"
-    ).textContent = email;
+async function cargarSesionUsuario() {
+  let usuario = null;
 
-    if(btnLogin){
-
-        btnLogin.style.display = "none";
-
+  try {
+    const res = await fetch("/api/usuario-actual", { credentials: "same-origin" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.status === "ok") {
+        usuario = data.usuario;
+        localStorage.setItem("rethiner_user", JSON.stringify(usuario));
+      }
     }
+  } catch (_) {}
 
+  if (!usuario) {
+    try {
+      usuario = JSON.parse(localStorage.getItem("rethiner_user") || "null");
+    } catch (_) {
+      usuario = null;
+    }
+  }
+
+  await aplicarUsuarioEnPagina(usuario);
 }
 
-function cerrarSesion(){
-
-    localStorage.removeItem(
-      "usuarioNombre"
-    );
-
-    localStorage.removeItem(
-      "usuarioEmail"
-    );
-
-    window.location.href =
-    "/login";
-
-}
+cargarSesionUsuario();
 
 // HORARIOS DINÁMICOS
 
@@ -730,7 +723,11 @@ fechaInput.addEventListener(
       "hora"
     );
 
-    selectHora.innerHTML = "";
+    selectHora.innerHTML = `
+      <option value="">
+        Selecciona una hora
+      </option>
+    `;
 
     const res = await fetch(
       `/horarios-disponibles/${fecha}`
@@ -742,7 +739,7 @@ fechaInput.addEventListener(
     if(horarios.length === 0){
 
         selectHora.innerHTML = `
-          <option>
+          <option value="">
             No hay horarios disponibles
           </option>
         `;
